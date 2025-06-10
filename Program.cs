@@ -31,6 +31,7 @@ builder.Configuration.AddEnvironmentVariables();
 var supabaseUrl = Environment.GetEnvironmentVariable("supabaseUrl", EnvironmentVariableTarget.Process);
 var supabaseKey = Environment.GetEnvironmentVariable("supabaseServiceKey", EnvironmentVariableTarget.Process);
 var supabaseJwtSecret = Environment.GetEnvironmentVariable("supabaseJwt", EnvironmentVariableTarget.Process); // The JWT Secret from Supabase Auth settings
+var apiUrl = Environment.GetEnvironmentVariable("apiUrl", EnvironmentVariableTarget.Process);
 
 if (string.IsNullOrEmpty(supabaseUrl))
 {
@@ -46,6 +47,11 @@ if (string.IsNullOrEmpty(supabaseJwtSecret))
 if (string.IsNullOrEmpty(supabaseKey))
 {
     throw new ArgumentNullException("Supabase Key is not set in environment variables.");
+}
+
+if (string.IsNullOrEmpty(apiUrl))
+{
+    throw new ArgumentNullException("API url is not set in environment variables.");
 }
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -180,7 +186,7 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontEnd",policy =>
     {
-        policy.WithOrigins("http://localhost:5173", "https://simple-rank.com", "https://api.simple-rank.com", "https://localhost:7123", "http://localhost:5033")
+        policy.WithOrigins("http://localhost:5173", "https://simple-rank.com", "https://api.simple-rank.com", "https://localhost:7123", "http://localhost:5033", apiUrl)
               .AllowAnyMethod()
               .AllowCredentials()
               .AllowAnyHeader();
