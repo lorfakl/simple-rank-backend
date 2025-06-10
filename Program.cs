@@ -29,8 +29,8 @@ builder.Configuration.AddJsonFile("appsettings.json", optional: false, reloadOnC
 builder.Configuration.AddEnvironmentVariables();
 
 var supabaseUrl = Environment.GetEnvironmentVariable("supabaseUrl", EnvironmentVariableTarget.Process);
-var supabaseKey = Environment.GetEnvironmentVariable("supabaseServiceKey", EnvironmentVariableTarget.Machine);
-var supabaseJwtSecret = Environment.GetEnvironmentVariable("supabaseJwt", EnvironmentVariableTarget.Machine); // The JWT Secret from Supabase Auth settings
+var supabaseKey = Environment.GetEnvironmentVariable("supabaseServiceKey", EnvironmentVariableTarget.Process);
+var supabaseJwtSecret = Environment.GetEnvironmentVariable("supabaseJwt", EnvironmentVariableTarget.Process); // The JWT Secret from Supabase Auth settings
 
 if (string.IsNullOrEmpty(supabaseUrl))
 {
