@@ -28,13 +28,13 @@ builder.Host.UseSerilog((context, services, configuration) => configuration
 builder.Configuration.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
 builder.Configuration.AddEnvironmentVariables();
 
-var supabaseUrl = Environment.GetEnvironmentVariable("supabaseUrl", EnvironmentVariableTarget.Machine);
+var supabaseUrl = Environment.GetEnvironmentVariable("supabaseUrl", EnvironmentVariableTarget.Process);
 var supabaseKey = Environment.GetEnvironmentVariable("supabaseServiceKey", EnvironmentVariableTarget.Machine);
 var supabaseJwtSecret = Environment.GetEnvironmentVariable("supabaseJwt", EnvironmentVariableTarget.Machine); // The JWT Secret from Supabase Auth settings
 
-if (string.IsNullOrEmpty(supabaseUrl) || string.IsNullOrEmpty(supabaseKey))
+if (string.IsNullOrEmpty(supabaseUrl))
 {
-    throw new ArgumentNullException("Supabase URL or Key is not set in environment variables.");
+    throw new ArgumentNullException("Supabase URL is not set in environment variables.");
 }
 
 if (string.IsNullOrEmpty(supabaseJwtSecret))
@@ -43,9 +43,9 @@ if (string.IsNullOrEmpty(supabaseJwtSecret))
 }
 
 
-if (string.IsNullOrEmpty(supabaseUrl) || string.IsNullOrEmpty(supabaseKey))
+if (string.IsNullOrEmpty(supabaseKey))
 {
-    throw new ArgumentNullException("Supabase URL or Key is not set in environment variables.");
+    throw new ArgumentNullException("Supabase Key is not set in environment variables.");
 }
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
