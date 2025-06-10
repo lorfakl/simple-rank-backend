@@ -1,0 +1,81 @@
+{
+	"info": {
+		"_postman_id": "47f29459-64ae-496f-b712-06ad880f88bf",
+		"name": "Simple Rank Backend",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "12315390"
+	},
+	"item": [
+		{
+			"name": "User",
+			"item": [
+				{
+					"name": "User/SignUpWithEmail",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"Email\":\"lorfakl@aol.com\",\r\n    \"Password\":\"fsdafsdfsd\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseurl}}User/SignUpWithEmail",
+							"host": [
+								"{{baseurl}}User"
+							],
+							"path": [
+								"SignUpWithEmail"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "User/SignInWithEmail",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"Email\":\"lorfakl@aol.com\",\r\n    \"Password\":\"fsdafsdfsd\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseurl}}User/SignInWithEmail",
+							"host": [
+								"{{baseurl}}User"
+							],
+							"path": [
+								"SignInWithEmail"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "New Request",
+			"request": {
+				"method": "GET",
+				"header": []
+			},
+			"response": []
+		}
+	]
+}
