@@ -81,18 +81,16 @@ namespace simple_rank_backend.Models
             // Assuming we have a method to fetch items by RankingId
             if(ranking.RankingItems.Any())
             {
-                try
+
+                for (int i = 0; i < ranking.RankingItems.Count; i++)
                 {
-                    Items = ranking.RankingItems
-                    .Select(item => new RankItem(item.Name, item.Description, ranking.ItemPlacement[item.ItemId], item.ItemId))
-                    .OrderBy(item => ranking.ItemPlacement[item.ItemId])
-                    .ToList();
+                    var item = ranking.RankingItems[i];
+                    int placement = ranking.ItemPlacement.TryGetValue(item.ItemId, out int value) ? value : i;
+                    RankItem rankItem = new RankItem(item.Name, item.Description, placement, item.ItemId);
+                    Items.Add(rankItem);
                 }
-                catch(Exception ex)
-                {
-                    Items = new List<RankItem>();
-                }
-                
+
+                Items = Items.OrderBy(item => item.Rank).ToList();
             }
             else
             {

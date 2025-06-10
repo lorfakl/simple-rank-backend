@@ -28,10 +28,27 @@ builder.Host.UseSerilog((context, services, configuration) => configuration
 builder.Configuration.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
 builder.Configuration.AddEnvironmentVariables();
 
-var supabaseUrl = Environment.GetEnvironmentVariable("supabaseUrl", EnvironmentVariableTarget.Process);
-var supabaseKey = Environment.GetEnvironmentVariable("supabaseServiceKey", EnvironmentVariableTarget.Process);
-var supabaseJwtSecret = Environment.GetEnvironmentVariable("supabaseJwt", EnvironmentVariableTarget.Process); // The JWT Secret from Supabase Auth settings
-var apiUrl = Environment.GetEnvironmentVariable("apiUrl", EnvironmentVariableTarget.Process);
+var supabaseUrl = string.Empty;
+var supabaseKey = string.Empty;
+var supabaseJwtSecret = string.Empty; // The JWT Secret from Supabase Auth settings
+var apiUrl = string.Empty;
+
+if(builder.Environment.IsProduction())
+{
+    supabaseUrl = Environment.GetEnvironmentVariable("supabaseUrl", EnvironmentVariableTarget.Process);
+    supabaseKey = Environment.GetEnvironmentVariable("supabaseServiceKey", EnvironmentVariableTarget.Process);
+    supabaseJwtSecret = Environment.GetEnvironmentVariable("supabaseJwt", EnvironmentVariableTarget.Process); // The JWT Secret from Supabase Auth settings
+    apiUrl = Environment.GetEnvironmentVariable("apiUrl", EnvironmentVariableTarget.Process);
+}
+else
+{
+    supabaseUrl = Environment.GetEnvironmentVariable("supabaseUrl", EnvironmentVariableTarget.Machine);
+    supabaseKey = Environment.GetEnvironmentVariable("supabaseServiceKey", EnvironmentVariableTarget.Machine);
+    supabaseJwtSecret = Environment.GetEnvironmentVariable("supabaseJwt", EnvironmentVariableTarget.Machine);
+}
+
+
+
 
 if (string.IsNullOrEmpty(supabaseUrl))
 {
@@ -49,10 +66,14 @@ if (string.IsNullOrEmpty(supabaseKey))
     throw new ArgumentNullException("Supabase Key is not set in environment variables.");
 }
 
-if (string.IsNullOrEmpty(apiUrl))
+if(builder.Environment.IsProduction())
 {
-    throw new ArgumentNullException("API url is not set in environment variables.");
+    if (string.IsNullOrEmpty(apiUrl))
+    {
+        throw new ArgumentNullException("API url is not set in environment variables.");
+    }
 }
+
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 .AddJwtBearer(options =>
@@ -186,7 +207,7 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontEnd",policy =>
     {
-        policy.WithOrigins("http://localhost:5173", "https://simple-rank.com", "https://api.simple-rank.com", "https://localhost:7123", "http://localhost:5033", apiUrl)
+        policy.WithOrigins("http://localhost:5173", "https://simplerank.com", "https://api.simple-rank.com", "https://localhost:7123", "http://localhost:5033", apiUrl)
               .AllowAnyMethod()
               .AllowCredentials()
               .AllowAnyHeader();

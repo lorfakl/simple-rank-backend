@@ -25,7 +25,14 @@ namespace simple_rank_backend.Controllers
             _userService = userService;
             _cache = memoryCache;
         }
-        
+
+        [HttpOptions]
+        public IActionResult Options()
+        {
+            return Ok();
+        }
+
+
         [HttpPost]
         [Authorize]
         public async Task<IActionResult> SetUserMetadata([FromBody] SetMetadataDTO rq)

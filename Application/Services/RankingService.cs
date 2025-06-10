@@ -33,6 +33,8 @@ namespace simple_rank_backend.Application.Services
             TableModels.Ranking newRanking = new TableModels.Ranking(rq, userId);
 
             var result = await _supabase.From<TableModels.Ranking>().Insert(newRanking);
+            
+            var insertRankingTracking = await _supabase.From<TableModels.TotalRankings>().Insert(new TableModels.TotalRankings());
 
             if (result?.ResponseMessage?.IsSuccessStatusCode == true)
             {
@@ -42,6 +44,7 @@ namespace simple_rank_backend.Application.Services
                     var rankItems = TableModels.RankingItems.CreateItems(result.Model.RankingId, rq.Items.ToList());
                     var insertItemsResult = await _supabase.From<TableModels.RankingItems>().Insert(rankItems);
 
+                    
                     if (insertItemsResult.ResponseMessage.IsSuccessStatusCode && insertItemsResult.Models.Any())
                     {
                         var itemPlacement = TableModels.Ranking.CreateItemPlacement(insertItemsResult.Models.OrderBy(i => i.Rank).ToList());

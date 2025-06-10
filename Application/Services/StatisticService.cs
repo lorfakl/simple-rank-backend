@@ -181,7 +181,7 @@ namespace simple_rank_backend.Application.Services
             try
             {
                 // Get total count of all rankings in the system
-                var countResult = await _supabase.From<TableModels.Ranking>()
+                var countResult = await _supabase.From<TableModels.TotalRankings>()
                     .Count(Supabase.Postgrest.Constants.CountType.Exact);
 
                 if (countResult != null)
