@@ -207,7 +207,8 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontEnd",policy =>
     {
-        policy.WithOrigins("http://localhost:5173", "https://simplerank.com", "https://api.simple-rank.com", "https://localhost:7123", "http://localhost:5033", apiUrl)
+        policy.WithOrigins("http://localhost:5173", "https://simplerank.com", "https://api.simple-rank.com", "https://localhost:7123", "http://localhost:5033", apiUrl,
+                            "https://simplerank.io", "https://simplerank.app", "https://simplerank.net")
               .AllowAnyMethod()
               .AllowCredentials()
               .AllowAnyHeader();
