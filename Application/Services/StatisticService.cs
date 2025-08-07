@@ -1,4 +1,5 @@
-﻿using simple_rank_backend.Application.Common;
+﻿using Microsoft.Extensions.Caching.Memory;
+using simple_rank_backend.Application.Common;
 using simple_rank_backend.Application.Services.Interfaces;
 using simple_rank_backend.DTOs;
 using simple_rank_backend.DTOs.Statistic;
@@ -12,19 +13,22 @@ namespace simple_rank_backend.Application.Services
     {
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IUserCacheService _userCache;
+        private readonly IMemoryCache _memCache;
         private readonly Client _supabase;
         private readonly Serilog.ILogger _log;
 
-        public StatisticService(IHttpContextAccessor httpAccessor, IUserCacheService userCache, Client client, Serilog.ILogger log)
+        public StatisticService(IHttpContextAccessor httpAccessor, IUserCacheService userCache, IMemoryCache memCache, Client client, Serilog.ILogger log)
         {
             _httpContextAccessor = httpAccessor;
             _userCache = userCache;
+            _memCache = memCache;
             _supabase = client;
             _log = log;
         }
 
         public async Task<Result<RankStatisticResponse>> GetRankStatistics(string rankingId)
         {
+
             var result = await _supabase.From<TableModels.Stats>()
                 .Where(s => s.RankingId == rankingId)
                 .Get();
@@ -180,6 +184,19 @@ namespace simple_rank_backend.Application.Services
         {
             try
             {
+                string cacheKey = "totalRankings";
+
+                if (_memCache.TryGetValue<int>(cacheKey, out int totalRankings))
+                {
+                    var response = new RankingsCountResponse
+                    {
+                        TotalCount = totalRankings,
+                        Message = "Successfully retrieved total rankings count"
+                    };
+                    return Result<RankingsCountResponse>.Success(response);
+                }
+               
+
                 // Get total count of all rankings in the system
                 var countResult = await _supabase.From<TableModels.TotalRankings>()
                     .Count(Supabase.Postgrest.Constants.CountType.Exact);
@@ -191,6 +208,9 @@ namespace simple_rank_backend.Application.Services
                         TotalCount = (int)countResult,
                         Message = "Successfully retrieved total rankings count"
                     };
+
+                    var options = new MemoryCacheEntryOptions().SetSize(1).SetSlidingExpiration(new TimeSpan(24, 0, 42));
+                    _memCache.Set(cacheKey, (int)countResult, options);
                     return Result<RankingsCountResponse>.Success(response);
                 }
                 else
@@ -209,8 +229,18 @@ namespace simple_rank_backend.Application.Services
         {
             try
             {
-                // Get total count of all users in the system
-                // Note: This assumes you have a Users table. Adjust table name as needed.
+                string cacheKey = "totalUsers";
+
+                if(_memCache.TryGetValue(cacheKey, out int totalUsers))
+                {
+                    var response = new UsersCountResponse
+                    {
+                        TotalCount = totalUsers,
+                        Message = "Successfully retrieved total users count"
+                    };
+                    return Result<UsersCountResponse>.Success(response);
+                }
+
                 var countResult = await _supabase.From<TableModels.UserMetadata>()
                     .Count(Supabase.Postgrest.Constants.CountType.Exact);
 
@@ -221,6 +251,9 @@ namespace simple_rank_backend.Application.Services
                         TotalCount = (int)countResult,
                         Message = "Successfully retrieved total users count"
                     };
+
+                    var options = new MemoryCacheEntryOptions().SetSize(1).SetSlidingExpiration(new TimeSpan(24, 0, 42));
+                    _memCache.Set(cacheKey, (int)countResult, options);
                     return Result<UsersCountResponse>.Success(response);
                 }
                 else
