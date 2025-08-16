@@ -123,7 +123,7 @@ namespace simple_rank_backend.Controllers
         [Authorize]
         public async Task<IActionResult> GetRanking(string rankingId)
         {
-            Result<Ranking> result = await _rankService.GetRankingAsync(new GetRankingByIdRequest { Id = rankingId });
+            Result<Ranking> result = await _rankService.GetRankingAsync(new GetRankingByIdRequest { Id = rankingId }, _cache);
             return this.HandleResult(result);
         }
 

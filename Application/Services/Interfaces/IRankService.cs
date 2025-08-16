@@ -1,4 +1,5 @@
-﻿using simple_rank_backend.Application.Common;
+﻿using Microsoft.Extensions.Caching.Memory;
+using simple_rank_backend.Application.Common;
 using simple_rank_backend.DTOs;
 using simple_rank_backend.DTOs.Ranking;
 using simple_rank_backend.DTOs.Ranking.Responses;
@@ -14,7 +15,7 @@ namespace simple_rank_backend.Application.Services.Interfaces
         Task<Result> UpdateBasicRankingInfoAsync(UpdateRankingRequest rq);
         Task<Result> UpdateRankItemPlacement(UpdateRankItemPlacementRequest rq);
         Task<Result<ResponseBase>> PinRankingAsync(string rankingId, bool isPinned);
-        Task<Result<Ranking>> GetRankingAsync(GetRankingByIdRequest rq);
+        Task<Result<Ranking>> GetRankingAsync(GetRankingByIdRequest rq, IMemoryCache memoryCache);
         Task<Result<List<Ranking>>> GetUserRankingsAsync(string userId);
         Task<Result<ShareableLinkResponse>> GetShareableLinkAsync(string rankingId);
         Task<Result<SharedRankResponse>> GetSharedRankAsync(string rankingId);

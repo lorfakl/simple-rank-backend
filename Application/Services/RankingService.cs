@@ -1,4 +1,5 @@
-﻿using Serilog;
+﻿using Microsoft.Extensions.Caching.Memory;
+using Serilog;
 using simple_rank_backend.Application.Common;
 using simple_rank_backend.Application.Services.Interfaces;
 using simple_rank_backend.DTOs;
@@ -136,12 +137,16 @@ namespace simple_rank_backend.Application.Services
         }
 
 
-        public async Task<Result<Ranking>> GetRankingAsync(GetRankingByIdRequest rq)
+        public async Task<Result<Ranking>> GetRankingAsync(GetRankingByIdRequest rq, IMemoryCache cache)
         {
             var queryResult = await _supabase.From<TableModels.Ranking>()
                 .Where(r => r.RankingId == rq.Id)
                 .Get();
 
+            if(cache.TryGetValue(rq.Id, out simple_rank_backend.Models.Ranking targetRank))    
+            {
+                return Result<Ranking>.Success(targetRank, $"Successfully grabbed ranking: {rq.Id}");
+            }
 
             if(queryResult.Model != default(TableModels.Ranking) && queryResult.Model != null)
             {
@@ -150,6 +155,8 @@ namespace simple_rank_backend.Application.Services
 
                 ranking.CreatedBy = ownerInfo;
 
+                var options = new MemoryCacheEntryOptions().SetSize(1).SetSlidingExpiration(new TimeSpan(0, 5, 42));
+                cache.Set(rq.Id, ranking, options);
                 return Result<Ranking>.Success(ranking, $"Successfully grabbed ranking: {rq.Id}");
             }
             else
