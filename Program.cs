@@ -14,6 +14,10 @@ using simple_rank_backend.Application.Configuration;
 using Serilog;
 using Serilog.Events;
 using Microsoft.AspNetCore.HttpOverrides;
+using simple_rank_backend.Application.BackgroundServices;
+using simple_rank_backend.Application.Common;
+using Azure.Security.KeyVault.Secrets;
+using Azure.Identity;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -28,47 +32,15 @@ builder.Host.UseSerilog((context, services, configuration) => configuration
 builder.Configuration.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
 builder.Configuration.AddEnvironmentVariables();
 
-var supabaseUrl = string.Empty;
-var supabaseKey = string.Empty;
-var supabaseJwtSecret = string.Empty; // The JWT Secret from Supabase Auth settings
-var apiUrl = string.Empty;
+var loadSecrets = SecretManager.LoadEnvironmentVariables();
 
-if(builder.Environment.IsProduction())
+
+var akvClient = new Azure.Security.KeyVault.Secrets.SecretClient(new Uri(loadSecrets[SecretKeys.azureKeyVaultUri]), 
+    new ClientSecretCredential(loadSecrets[SecretKeys.AZURE_TENANT_ID], loadSecrets[SecretKeys.AZURE_CLIENT_ID], loadSecrets[SecretKeys.AZURE_CLIENT_SECRET]));
+
+if (builder.Environment.IsProduction())
 {
-    supabaseUrl = Environment.GetEnvironmentVariable("supabaseUrl", EnvironmentVariableTarget.Process);
-    supabaseKey = Environment.GetEnvironmentVariable("supabaseServiceKey", EnvironmentVariableTarget.Process);
-    supabaseJwtSecret = Environment.GetEnvironmentVariable("supabaseJwt", EnvironmentVariableTarget.Process); // The JWT Secret from Supabase Auth settings
-    apiUrl = Environment.GetEnvironmentVariable("apiUrl", EnvironmentVariableTarget.Process);
-}
-else
-{
-    supabaseUrl = Environment.GetEnvironmentVariable("supabaseUrl", EnvironmentVariableTarget.Machine);
-    supabaseKey = Environment.GetEnvironmentVariable("supabaseServiceKey", EnvironmentVariableTarget.Machine);
-    supabaseJwtSecret = Environment.GetEnvironmentVariable("supabaseJwt", EnvironmentVariableTarget.Machine);
-}
-
-
-
-
-if (string.IsNullOrEmpty(supabaseUrl))
-{
-    throw new ArgumentNullException("Supabase URL is not set in environment variables.");
-}
-
-if (string.IsNullOrEmpty(supabaseJwtSecret))
-{
-    throw new ArgumentNullException("supabaseJwt is not set in environment variables. This is required for JWT validation.");
-}
-
-
-if (string.IsNullOrEmpty(supabaseKey))
-{
-    throw new ArgumentNullException("Supabase Key is not set in environment variables.");
-}
-
-if(builder.Environment.IsProduction())
-{
-    if (string.IsNullOrEmpty(apiUrl))
+    if (string.IsNullOrEmpty(loadSecrets[SecretKeys.apiUrl]))
     {
         throw new ArgumentNullException("API url is not set in environment variables.");
     }
@@ -78,13 +50,13 @@ if(builder.Environment.IsProduction())
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 .AddJwtBearer(options =>
 {
-    Console.WriteLine($"{supabaseUrl}/auth/v1");
+    Console.WriteLine($"{loadSecrets[SecretKeys.supabaseUrl]}/auth/v1");
     options.TokenValidationParameters = new TokenValidationParameters
     {
         ValidateIssuerSigningKey = true,
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(supabaseJwtSecret)),
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(loadSecrets[SecretKeys.supabaseJwt])),
         ValidateIssuer = true,
-        ValidIssuer = $"{supabaseUrl}/auth/v1",
+        ValidIssuer = $"{loadSecrets[SecretKeys.supabaseUrl]}/auth/v1",
 
         ValidateAudience = true,
         ValidAudience = "authenticated",
@@ -131,7 +103,7 @@ builder.Services.Configure<ForwardedHeadersOptions>(options =>
 });
 
 builder.Services.AddScoped<Client>(_ => 
-    new Client(supabaseUrl, supabaseKey, 
+    new Client(loadSecrets[SecretKeys.supabaseUrl], loadSecrets[SecretKeys.supabaseServiceKey], 
         new SupabaseOptions
         {
             AutoRefreshToken = true,
@@ -142,11 +114,17 @@ builder.Services.AddScoped<Client>(_ =>
 
 builder.Services.AddHttpContextAccessor();
 
+builder.Services.AddHostedService<ConfigureMemoryCache>();
+builder.Services.AddHostedService<SupabaseBackgroundService>();
+
+
 builder.Services.AddScoped<IRankService, RankingService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IStatisticService, StatisticService>();
 builder.Services.AddSingleton<IUserCacheService, UserCacheService>();
+builder.Services.AddScoped<ISecretClientService, SecretClientService>();
 
+builder.Services.AddSingleton( SecretClient => akvClient );
 builder.Services.AddRateLimiter(options =>
 {
     // Fixed window rate limiter - 100 requests per minute
@@ -207,8 +185,8 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontEnd",policy =>
     {
-        policy.WithOrigins("http://localhost:5173", "https://simplerank.com", "https://api.simple-rank.com", "https://localhost:7123", "http://localhost:5033", apiUrl,
-                            "https://simplerank.io", "https://simplerank.app", "https://simplerank.net")
+        policy.WithOrigins("http://localhost:5173", "https://simplerank.com", "https://api.simple-rank.com", "https://localhost:7123", "http://localhost:5033", 
+            loadSecrets[SecretKeys.apiUrl], "https://simplerank.io", "https://simplerank.app", "https://simplerank.net")
               .AllowAnyMethod()
               .AllowCredentials()
               .AllowAnyHeader();

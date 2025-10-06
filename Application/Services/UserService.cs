@@ -61,7 +61,6 @@ namespace simple_rank_backend.Application.Services
                     return Result<ResponseBase>.Failure(Error.Exception("500", ex));
                 }
             }
-            
         }
 
         public async Task<UserMetadata> GetUserMetadataAsync(string userId)

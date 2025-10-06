@@ -18,6 +18,9 @@ namespace simple_rank_backend.TableModels
         [Column(columnName: "avatar_url")]
         public string AvatarUrl { get; set; }
 
+        [Column(columnName: "data_encryption_key")]
+        public string ? DataEncryptionKey { get; set; } 
+
         public UserMetadata() 
         {
             UserId = string.Empty;
