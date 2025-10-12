@@ -8,7 +8,7 @@ namespace simple_rank_backend.Application.BackgroundServices
     {
         private readonly Serilog.ILogger _logger;
         private readonly Client _supabase;
-
+        private readonly Random _random;
         private DateTime _nextExecution;
 
         public SupabaseBackgroundService(Serilog.ILogger logger)
@@ -21,7 +21,9 @@ namespace simple_rank_backend.Application.BackgroundServices
                     AutoConnectRealtime = true,
                 }
             );
-            _nextExecution = DateTime.UtcNow.AddMinutes(5);
+            _random = new Random();
+
+            _nextExecution = DateTime.UtcNow.AddMinutes(_random.NextInt64(1, 365));
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -32,10 +34,8 @@ namespace simple_rank_backend.Application.BackgroundServices
             {
                 if (DateTime.UtcNow >= _nextExecution)
                 {
-                    // Perform background tasks here
                     _logger.Information("Supabase background service is running.");
-                    // Wait for a specified interval before the next iteration
-                    //Task.Delay(TimeSpan.FromMinutes(5), stoppingToken).Wait(stoppingToken);
+
                     var insertResult = await _supabase.From<TableModels.Heartbeat>().Insert(new TableModels.Heartbeat() { LastHeartbeat = DateTime.UtcNow }, cancellationToken: stoppingToken);
 
                     if (insertResult.ResponseMessage.IsSuccessStatusCode)
@@ -47,7 +47,7 @@ namespace simple_rank_backend.Application.BackgroundServices
                         _logger.Error("Failed to insert heartbeat due to {Message}. Status Code: {StatusCode}", insertResult.ResponseMessage, insertResult.ResponseMessage.StatusCode);
                     }
 
-                    _nextExecution = _nextExecution.AddMinutes(5);
+                    _nextExecution = _nextExecution.AddMinutes(_random.NextInt64(1, 365));
                 }
             }
         }

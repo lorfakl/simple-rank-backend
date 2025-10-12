@@ -43,6 +43,8 @@ namespace simple_rank_backend.Application.Services
                 if (rq.Items.Any())
                 {
                     var rankItems = TableModels.RankingItems.CreateItems(result.Model.RankingId, rq.Items.ToList());
+
+                    //encrypt the items here then insert 
                     var insertItemsResult = await _supabase.From<TableModels.RankingItems>().Insert(rankItems);
 
                     
@@ -96,10 +98,11 @@ namespace simple_rank_backend.Application.Services
             if(checkOwnerResult.ResponseMessage.IsSuccessStatusCode && checkOwnerResult.Models.Any())
             {
                 TableModels.RankingItems newItem = new TableModels.RankingItems(rq.Item, rq.RankingId);
-                
+
+                //encrypt the item here then insert
                 var rankItemInsertResult = await _supabase.From<TableModels.RankingItems>().Insert(newItem);
 
-                if(rankItemInsertResult.ResponseMessage.IsSuccessStatusCode && rankItemInsertResult.Models.Any())
+                if(rankItemInsertResult.ResponseMessage.IsSuccessStatusCode && rankItemInsertResult.Models.Count > 0) //pretty sure this will always be 1
                 {
                     var itemPlacementDict = checkOwnerResult.Model.ItemPlacement;
                     itemPlacementDict.Add(rankItemInsertResult.Model.ItemId, (int)rq.Item.Rank);
@@ -139,17 +142,20 @@ namespace simple_rank_backend.Application.Services
 
         public async Task<Result<Ranking>> GetRankingAsync(GetRankingByIdRequest rq, IMemoryCache cache)
         {
+            if (cache.TryGetValue(rq.Id, out Ranking? targetRank))
+            {
+                if(targetRank is not null)
+                    //decrypt ranking here 
+                    return Result<Ranking>.Success(targetRank, $"Successfully grabbed ranking: {rq.Id}");
+            }
+
             var queryResult = await _supabase.From<TableModels.Ranking>()
                 .Where(r => r.RankingId == rq.Id)
                 .Get();
 
-            if(cache.TryGetValue(rq.Id, out simple_rank_backend.Models.Ranking targetRank))    
-            {
-                return Result<Ranking>.Success(targetRank, $"Successfully grabbed ranking: {rq.Id}");
-            }
-
             if(queryResult.Model != default(TableModels.Ranking) && queryResult.Model != null)
             {
+                //decrypt ranking here 
                 var ranking = new Ranking(queryResult.Model);
                 UserMetadata ownerInfo = await _userCache.GetUserAsync(ranking.Owner);
 

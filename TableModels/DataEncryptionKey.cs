@@ -1,13 +1,14 @@
 ﻿using Supabase.Postgrest.Attributes;
+using Supabase.Postgrest.Models;
 
 namespace simple_rank_backend.TableModels
 {
     [Table("DataEncryptionKeys")]
-    public class DataEncryptionKey
+    public class DataEncryptionKey: BaseModel
     {
-        [PrimaryKey("id")]
+        [PrimaryKey("user_id")]
         public string Id { get; set; } = null!;
-        [Column("key")]
+        [Column("dek")]
         public string Key { get; set; } = null!;
         [Column("created_at")]
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;

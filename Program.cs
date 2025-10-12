@@ -16,7 +16,7 @@ using Serilog.Events;
 using Microsoft.AspNetCore.HttpOverrides;
 using simple_rank_backend.Application.BackgroundServices;
 using simple_rank_backend.Application.Common;
-using Azure.Security.KeyVault.Secrets;
+using Azure.Security.KeyVault.Keys.Cryptography;
 using Azure.Identity;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -35,7 +35,7 @@ builder.Configuration.AddEnvironmentVariables();
 var loadSecrets = SecretManager.LoadEnvironmentVariables();
 
 
-var akvClient = new Azure.Security.KeyVault.Secrets.SecretClient(new Uri(loadSecrets[SecretKeys.azureKeyVaultUri]), 
+var akvClient = new Azure.Security.KeyVault.Keys.Cryptography.CryptographyClient(new Uri(loadSecrets[SecretKeys.azureKeyVaultUri]), 
     new ClientSecretCredential(loadSecrets[SecretKeys.AZURE_TENANT_ID], loadSecrets[SecretKeys.AZURE_CLIENT_ID], loadSecrets[SecretKeys.AZURE_CLIENT_SECRET]));
 
 if (builder.Environment.IsProduction())

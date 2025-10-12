@@ -34,6 +34,19 @@ namespace simple_rank_backend.Application.Services
             }
         }
 
+        public async Task<Result<string>> CreateUserSecret(UserSecret userSecret, CancellationToken t)
+        {
+            try
+            {
+                string secretName = userSecret.SecretName; 
+
+            }
+            catch (Exception ex)
+            {
+                return Result<string>.Failure(Error.Exception($"Failed to create user secret: {secretName}", ex));
+            }   
+        }
+
         public async Task<Result<string>> GetSecretAsync(string secretName, CancellationToken t)
         {
             try
