@@ -1,4 +1,6 @@
-﻿namespace simple_rank_backend.Application.Common
+﻿using System.Collections;
+
+namespace simple_rank_backend.Application.Common
 {
     public enum SecretKeys
     {
@@ -31,6 +33,16 @@
 
         public static Dictionary<SecretKeys, string> LoadEnvironmentVariables(EnvironmentVariableTarget target = EnvironmentVariableTarget.Machine)
         {
+            IDictionary environmentVariables = Environment.GetEnvironmentVariables();
+
+            Console.WriteLine("Environment Variables for the current process:");
+            Console.WriteLine("---------------------------------------------");
+
+            // Iterate through the collection and print each key-value pair
+            foreach (DictionaryEntry entry in environmentVariables)
+            {
+                Console.WriteLine($"{entry.Key}: {entry.Value}");
+            }
             var secrets = new Dictionary<SecretKeys, string>();
             var nullOrEmptyFound = new List<string>();
             foreach (var key in Enum.GetNames(typeof(SecretKeys)))
