@@ -31,7 +31,7 @@ namespace simple_rank_backend.Application.Common
             return value;
         }
 
-        public static Dictionary<SecretKeys, string> LoadEnvironmentVariables(EnvironmentVariableTarget target = EnvironmentVariableTarget.Machine)
+        public static Dictionary<SecretKeys, string> LoadEnvironmentVariables(EnvironmentVariableTarget target = EnvironmentVariableTarget.Process)
         {
             IDictionary environmentVariables = Environment.GetEnvironmentVariables();
 
@@ -52,7 +52,14 @@ namespace simple_rank_backend.Application.Common
                 
                 if (string.IsNullOrEmpty(value))
                 {
-                    nullOrEmptyFound.Add(key);
+                    if (environmentVariables.Contains(key))
+                    {
+                        secrets.Add(Enum.Parse<SecretKeys>(key), environmentVariables[key].ToString());
+                    }
+                    else
+                    {
+                        nullOrEmptyFound.Add(key);
+                    }
                 }
                 else
                 {
