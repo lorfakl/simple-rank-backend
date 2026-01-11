@@ -1,6 +1,8 @@
 ﻿
 using simple_rank_backend.Application.Common;
+using simple_rank_backend.Application.Services;
 using Supabase;
+using ILogger = Serilog.ILogger;
 
 namespace simple_rank_backend.Application.BackgroundServices
 {
@@ -11,16 +13,10 @@ namespace simple_rank_backend.Application.BackgroundServices
         private readonly Random _random;
         private DateTime _nextExecution;
 
-        public SupabaseBackgroundService(Serilog.ILogger logger)
+        public SupabaseBackgroundService(Serilog.ILogger logger, Client supabaseService)
         {
             _logger = logger;
-            _supabase = new Client(SecretManager.GetSecret(SecretKeys.SupabaseUrl), SecretManager.GetSecret(SecretKeys.SupabaseServiceKey),
-                new SupabaseOptions
-                {
-                    AutoRefreshToken = true,
-                    AutoConnectRealtime = true,
-                }
-            );
+            _supabase = supabaseService;
             _random = new Random();
 
             _nextExecution = DateTime.UtcNow.AddSeconds(15); //AddMinutes(_random.NextInt64(1, 365));
