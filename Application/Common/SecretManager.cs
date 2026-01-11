@@ -30,19 +30,17 @@ namespace simple_rank_backend.Application.Common
             }
             return value;
         }
-
-        public static Dictionary<SecretKeys, string> LoadEnvironmentVariables(EnvironmentVariableTarget target = EnvironmentVariableTarget.Process)
+#if DEBUG
+        private const EnvironmentVariableTarget DefaultTarget = EnvironmentVariableTarget.Process;
+#else
+        private const EnvironmentVariableTarget DefaultTarget = EnvironmentVariableTarget.Machine;
+#endif
+        public static Dictionary<SecretKeys, string> LoadEnvironmentVariables(EnvironmentVariableTarget target = DefaultTarget)
         {
             IDictionary environmentVariables = Environment.GetEnvironmentVariables();
 
-            Console.WriteLine("Environment Variables for the current process:");
-            Console.WriteLine("---------------------------------------------");
-
-            // Iterate through the collection and print each key-value pair
-            foreach (DictionaryEntry entry in environmentVariables)
-            {
-                Console.WriteLine($"{entry.Key}: {entry.Value}");
-            }
+            Console.WriteLine($"Environment Variables for the current {DefaultTarget}:");
+            ;
             var secrets = new Dictionary<SecretKeys, string>();
             var nullOrEmptyFound = new List<string>();
             foreach (var key in Enum.GetNames(typeof(SecretKeys)))
