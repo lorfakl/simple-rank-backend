@@ -14,7 +14,7 @@ namespace simple_rank_backend.Application.BackgroundServices
         public SupabaseBackgroundService(Serilog.ILogger logger)
         {
             _logger = logger;
-            _supabase = new Client(SecretManager.GetSecret(SecretKeys.supabaseUrl), SecretManager.GetSecret(SecretKeys.supabaseServiceKey),
+            _supabase = new Client(SecretManager.GetSecret(SecretKeys.SupabaseUrl), SecretManager.GetSecret(SecretKeys.SupabaseServiceKey),
                 new SupabaseOptions
                 {
                     AutoRefreshToken = true,
@@ -23,7 +23,7 @@ namespace simple_rank_backend.Application.BackgroundServices
             );
             _random = new Random();
 
-            _nextExecution = DateTime.UtcNow.AddMinutes(_random.NextInt64(1, 365));
+            _nextExecution = DateTime.UtcNow.AddSeconds(15); //AddMinutes(_random.NextInt64(1, 365));
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -47,7 +47,7 @@ namespace simple_rank_backend.Application.BackgroundServices
                         _logger.Error("Failed to insert heartbeat due to {Message}. Status Code: {StatusCode}", insertResult.ResponseMessage, insertResult.ResponseMessage.StatusCode);
                     }
 
-                    _nextExecution = _nextExecution.AddMinutes(_random.NextInt64(1, 365));
+                    _nextExecution = _nextExecution.AddMinutes(_random.NextInt64(1, 1440)); // Next between 1 minute to 24 hours
                 }
             }
         }

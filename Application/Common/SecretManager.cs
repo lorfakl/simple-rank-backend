@@ -2,22 +2,28 @@
 {
     public enum SecretKeys
     {
-        supabaseUrl = 1,
-        supabaseServiceKey = 2,
-        supabaseJwt = 3,
-        apiUrl = 4,
-        AZURE_CLIENT_ID = 5,
-        AZURE_TENANT_ID = 6,
-        AZURE_CLIENT_SECRET = 7,
-        azureKeyVaultUri = 8
-
+        SupabaseUrl = 1,
+        SupabaseServiceKey = 2,
+        SupabaseJwt = 3,
+        ApiUrl = 4,
+        AzureClientId = 5,
+        AzureTenantId = 6,
+        AzureClientSecret = 7,
+        AzureKeyVaultUri = 8,
+        SentryDsn = 9,
+        AzureMasterKeyUrl = 10 
     }
 
     public static class SecretManager
     {
+#if DEBUG
+        private const EnvironmentVariableTarget DefaultTarget = EnvironmentVariableTarget.User;
+#else
+        private const EnvironmentVariableTarget DefaultTarget = EnvironmentVariableTarget.Machine;
         
+#endif
 
-        public static string GetSecret(SecretKeys key, EnvironmentVariableTarget target = EnvironmentVariableTarget.Machine)
+        public static string GetSecret(SecretKeys key, EnvironmentVariableTarget target = DefaultTarget)
         {
             var value = Environment.GetEnvironmentVariable(key.ToString(), target);
             
@@ -31,17 +37,25 @@
         public static Dictionary<SecretKeys, string> LoadEnvironmentVariables(EnvironmentVariableTarget target = EnvironmentVariableTarget.Machine)
         {
             var secrets = new Dictionary<SecretKeys, string>();
-            foreach (var key in Enum.GetValues(typeof(SecretKeys)))
+            var nullOrEmptyFound = new List<string>();
+            foreach (var key in Enum.GetNames(typeof(SecretKeys)))
             {
-                var value = Environment.GetEnvironmentVariable(key.ToString(), target);
+                var value = Environment.GetEnvironmentVariable(key, target);
                 
                 if (string.IsNullOrEmpty(value))
                 {
-                    throw new ArgumentNullException($"{key} is not set in environment variables.");
+                    nullOrEmptyFound.Add(key);
                 }
-                secrets.Add((SecretKeys)key, value);
+                else
+                {
+                    secrets.Add(Enum.Parse<SecretKeys>(key), value);
+                }
             }
-
+            
+            if (nullOrEmptyFound.Count > 0)
+            {
+                throw new ArgumentNullException($"The following environment variables are not set: {string.Join(", ", nullOrEmptyFound)}");
+            }
             return secrets;
         }
     }

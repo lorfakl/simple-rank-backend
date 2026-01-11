@@ -1,4 +1,6 @@
-﻿using Azure.Security.KeyVault.Secrets;
+﻿using Azure.Identity;
+using Azure.Security.KeyVault.Keys.Cryptography;
+using Azure.Security.KeyVault.Secrets;
 using simple_rank_backend.Application.Common;
 using simple_rank_backend.Application.Services.Interfaces;
 
@@ -11,30 +13,19 @@ namespace simple_rank_backend.Application.Services
 
     public class SecretClientService : ISecretClientService
     {
-        private readonly SecretClient _secretClient;
-
-        public SecretClientService(SecretClient secretClient)
+        private readonly CryptographyClient _cryptoClient;
+        
+        public SecretClientService(CryptographyClient cryptoClient)
         {
-            _secretClient = secretClient;
+            _cryptoClient = cryptoClient;
         }
 
         public async Task<Result> CreateOrUpdateSecretAsync()
         {
-            try
-            {
-                // Example: Create or update a secret
-                string secretName = SecretNames.MasterKey.ToString();
-                string secretValue = $"{HashService.GenerateLongHash(Guid.NewGuid().ToString())}"; ; // Generate a new master key
-                await _secretClient.SetSecretAsync(secretName, secretValue);
-                return Result.Success();
-            }
-            catch (Exception ex)
-            {
-                return Result.Failure(Error.Exception("Failed to create or update secret", ex));
-            }
+            throw new NotImplementedException();
         }
 
-        public async Task<Result<string>> CreateUserSecret(UserSecret userSecret, CancellationToken t)
+        /*public async Task<Result<string>> CreateUserSecret(UserSecret userSecret, CancellationToken t)
         {
             try
             {
@@ -45,19 +36,11 @@ namespace simple_rank_backend.Application.Services
             {
                 return Result<string>.Failure(Error.Exception($"Failed to create user secret: {secretName}", ex));
             }   
-        }
+        }*/
 
         public async Task<Result<string>> GetSecretAsync(string secretName, CancellationToken t)
         {
-            try
-            {
-                KeyVaultSecret secret = await _secretClient.GetSecretAsync(secretName, cancellationToken: t);
-                return Result<string>.Success(secret.Value);
-            }
-            catch (Exception ex)
-            {
-                return Result<string>.Failure(Error.Exception($"Failed to retrieve secret: {secretName}", ex));
-            }
+            throw new NotImplementedException();
         }
 
         public Task<Result> UpdateMasterSecret(SecretNames secretName)
