@@ -16,14 +16,9 @@
 
     public static class SecretManager
     {
-#if DEBUG
-        private const EnvironmentVariableTarget DefaultTarget = EnvironmentVariableTarget.User;
-#else
-        private const EnvironmentVariableTarget DefaultTarget = EnvironmentVariableTarget.Machine;
-        
-#endif
 
-        public static string GetSecret(SecretKeys key, EnvironmentVariableTarget target = DefaultTarget)
+
+        public static string GetSecret(SecretKeys key, EnvironmentVariableTarget target = EnvironmentVariableTarget.Machine)
         {
             var value = Environment.GetEnvironmentVariable(key.ToString(), target);
             
