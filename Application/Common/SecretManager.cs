@@ -29,13 +29,13 @@
             return value;
         }
 
-        public static Dictionary<SecretKeys, string> LoadEnvironmentVariables(EnvironmentVariableTarget target = EnvironmentVariableTarget.User)
+        public static Dictionary<SecretKeys, string> LoadEnvironmentVariables(EnvironmentVariableTarget target = EnvironmentVariableTarget.Machine)
         {
             var secrets = new Dictionary<SecretKeys, string>();
             var nullOrEmptyFound = new List<string>();
             foreach (var key in Enum.GetNames(typeof(SecretKeys)))
             {
-                Console.WriteLine((SecretKeys)Enum.Parse(typeof(SecretKeys), key));
+                Console.WriteLine($"{key} and value: {Environment.GetEnvironmentVariable(key, target)}");
                 var value = Environment.GetEnvironmentVariable(key, target);
                 
                 if (string.IsNullOrEmpty(value))
