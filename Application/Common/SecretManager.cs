@@ -31,9 +31,9 @@ namespace simple_rank_backend.Application.Common
             return value;
         }
 #if DEBUG
-        private const EnvironmentVariableTarget DefaultTarget = EnvironmentVariableTarget.Process;
-#else
         private const EnvironmentVariableTarget DefaultTarget = EnvironmentVariableTarget.Machine;
+#else
+        private const EnvironmentVariableTarget DefaultTarget = EnvironmentVariableTarget.Process;
 #endif
         public static Dictionary<SecretKeys, string> LoadEnvironmentVariables(EnvironmentVariableTarget target = DefaultTarget)
         {
