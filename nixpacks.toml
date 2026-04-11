@@ -1,2 +1,5 @@
-﻿[phases.setup]
-nixPkgs = ["dotnet-sdk_8"]
+﻿[variables]
+    NIXPACKS_METADATA = "dotnet-sdk_8"
+
+[phases.setup]
+    nixPkgs = ["dotnet-sdk_8"]
