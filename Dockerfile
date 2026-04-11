@@ -14,6 +14,9 @@ RUN dotnet publish -c Release -o out
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
 WORKDIR /app
 
+# Install curl for container health checks
+RUN apt-get update && apt-get install -y --no-install-recommends curl && rm -rf /var/lib/apt/lists/*
+
 # Create logs directory with proper permissions
 RUN mkdir -p /app/logs && chmod 755 /app/logs
 

@@ -241,6 +241,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 //app.UseMiddleware<AuthTokenValidator>();
 app.MapControllers();
+app.MapGet("/health", () => Results.Ok(new { status = "healthy" }));
 
 var dbConnectionString = app.Configuration["MasterKey"];
 
