@@ -1,5 +1,0 @@
-﻿[variables]
-    NIXPACKS_METADATA = "dotnet-sdk_9"
-
-[phases.setup]
-    nixPkgs = ["dotnet-sdk_9"]
