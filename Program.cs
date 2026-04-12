@@ -46,7 +46,7 @@ builder.Configuration.AddAzureKeyVault(vaultUri: new Uri(loadSecrets[SecretKeys.
 builder.WebHost.UseSentry( (options) =>
 {
     options.Dsn = loadSecrets[SecretKeys.SentryDsn];
-    options.Debug = true;
+    options.Debug = builder.Environment.IsDevelopment();
     options.TracesSampleRate = 1.0;
 });
 
@@ -227,6 +227,21 @@ else
 app.UseSerilogRequestLogging(options =>
 {
     options.MessageTemplate = "HTTP {RequestMethod} {RequestPath} responded {StatusCode} in {Elapsed:0.0000} ms";
+    options.GetLevel = (httpContext, elapsed, ex) =>
+    {
+        if (ex != null || httpContext.Response.StatusCode >= 500)
+            return Serilog.Events.LogEventLevel.Error;
+        if (httpContext.Response.StatusCode >= 400)
+            return Serilog.Events.LogEventLevel.Warning;
+
+        if (httpContext.Response.StatusCode <= 399)
+        {
+            return Serilog.Events.LogEventLevel.Debug; // Or Verbose
+        }
+        
+        return Serilog.Events.LogEventLevel.Information;
+    };
+    
     options.EnrichDiagnosticContext = (diagnosticContext, httpContext) =>
     {
         diagnosticContext.Set("RequestHost", httpContext.Request.Host.Value);
